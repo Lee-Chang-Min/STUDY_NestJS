@@ -1,37 +1,39 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UsePipes, ValidationPipe } from '@nestjs/common';
 import { BoardsService } from './boards.service';
 import { CreateBoardDto } from './dto/create-boards.dto';
-import { Board, BoardStatus } from './boards.model';
+import { BoardStatus } from './boards-status.enum';
 import { BoardStatusValidationPipe } from './pipes/board-status-validation.pipe';
+import { Board } from './board.entity';
 
 @Controller('boards')
 export class BoardsController {
     constructor(private boardService: BoardsService){}
 
+
     @Get()
-    getAllBoard(){
+    getAllBoard(): Promise<Board[]> {
         return this.boardService.getAllBoards();
+    }
+
+    @Get('/:id')
+    getBoardById(@Param('id') id: number) : Promise<Board> {
+        return this.boardService.getBoardById(id)
     }
 
     @Post()
     @UsePipes(ValidationPipe)
-    createBoard(@Body() createBoardDto: CreateBoardDto): Board {
-        return this.boardService.createBoard(createBoardDto)
-    }
-
-    @Get('/:id')
-    getBoardById(@Param('id') id: string): Board {
-        return this.boardService.getBoardById(id)
+    createBoard(@Body() CreateBoardDto: CreateBoardDto): Promise<Board> {
+        return this.boardService.createBoard(CreateBoardDto)
     }
 
     @Delete('/:id')
-    deleteBoard(@Param('id') id: string): void {
+    deleteBoard(@Param('id', ParseIntPipe) id: number): void {
         this.boardService.deleteBoard(id);
     }
 
     @Patch('/:id/status')
     updateBoardStatus(
-        @Param('id') id: string,
+        @Param('id', ParseIntPipe) id: number,
         @Body('status', BoardStatusValidationPipe) status: BoardStatus ,
         //@Body('status', BoardStatusValidationPipe) status: BoardStatus
     ){
@@ -40,5 +42,41 @@ export class BoardsController {
         
         return this.boardService.updateBoardStatus(id, status);
     }
+
+    //////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////
+    // @Get()
+    // getAllBoard(){
+    //     return this.boardService.getAllBoards();
+    // }
+
+    // @Post()
+    // @UsePipes(ValidationPipe)
+    // createBoard(@Body() createBoardDto: CreateBoardDto): Board {
+    //     return this.boardService.createBoard(createBoardDto)
+    // }
+
+    // @Get('/:id')
+    // getBoardById(@Param('id') id: string): Board {
+    //     return this.boardService.getBoardById(id)
+    // }
+
+    // @Delete('/:id')
+    // deleteBoard(@Param('id') id: string): void {
+    //     this.boardService.deleteBoard(id);
+    // }
+
+    // @Patch('/:id/status')
+    // updateBoardStatus(
+    //     @Param('id') id: string,
+    //     @Body('status', BoardStatusValidationPipe) status: BoardStatus ,
+    //     //@Body('status', BoardStatusValidationPipe) status: BoardStatus
+    // ){
+        
+    //     console.log(status);
+        
+    //     return this.boardService.updateBoardStatus(id, status);
+    // }
 
 }
